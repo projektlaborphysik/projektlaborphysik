@@ -24,7 +24,9 @@ float posR = 10; //140.0;
 
 //Hauptschalterzeug
 int  run = 1; //Gibt an, ob der Motor laufen darf, gegeben durch den Hauptschalter
-bool ts = false; //Tasterstatus des Buttons
+bool ts = false; //Tasterstatus des Hauptschalters
+bool tsL = false; //Tasterstatus des linken Endschalters
+bool tsR = false; //Tasterstatus des rechten Endschalters
 bool tsold = false; //Tasterstatus des Buttons in der letzten Iteration
 
 //int val = 0;
@@ -113,8 +115,15 @@ bool go(int steps) { //Diese Methode lässt den Motor steps (Mikro)Schritte gehe
 
 bool check_LR() { //Diese Funktion überprüft, ob die Endschalter gedrückt sind, oder ob sich der Motor noch weiter drehen darf
   bool allowed = false;
-  bool tsL = digitalRead(L); //Tasterstatus des linken bzw. rechten Endschalters
-  bool tsR = digitalRead(R);
+  tsL = digitalRead(L); //Tasterstatus des linken bzw. rechten Endschalters
+  tsR = digitalRead(R);
+  ts  = digitalRead(button); //Der Tasterstatus des Hauptschalters wird festgestellt
+  if(ts==true && tsold==false) { //Wenn der Taster gerade (im Vergleich zur letzten Überprüfung) geschlossen wurde, dann wird run geändert 
+                                 //Der Taster muss also gedrückt werden, um zu ändern, ob der Motor sich drehen darf
+                                 //Da der Tasterstatus allerdings vgl.weise selten geprüft wird, muss der Taster lange gedrückt werden
+    run *= -1;
+  }
+  tsold = ts;
   if (run == 1) { //Darf sich nur drehen, wenn der Hauptschalter das erlaubt
     
     if(k == 1 && tsR) { //Der Motor darf sich nur nach rechts drehen, wenn der rechte Endschalter es erlaubt
@@ -140,13 +149,17 @@ void do_step() { //Führt einen Schritt (bzw. Microstep) durch
 
 void loop() {
 
-
   if(Serial.available()==0) {
     //Serial.println("nichts");
   } else {
     String s = Serial.readString();
+    Serial.print("Input = ");
+    Serial.println(s);
+
     char a[n];
     s.toCharArray(a, n);
+
+    
     if(a[0] == 'L') {
       Serial.println("\n going to L");
       bool allowed = true;
@@ -162,7 +175,7 @@ void loop() {
       while(allowed) {
         allowed = go(steps);
       }
-    } else if (a[0] == 'p') {
+    } else if (a[0] == 'p' && a[1] == 'o' && a[2] == 's') {
       Serial.print("Position: ");
       Serial.println(pos);
     } else if (a[0] == 'n') {
@@ -199,6 +212,9 @@ void loop() {
       digitalWrite(ena, LOW);
     } else if (a[0] == 'd') {
       digitalWrite(ena, HIGH);
+    } else if (a[0] == 'r' && a[1] == 'u' && a[2] == 'n') {
+      Serial.println("run = 1");
+      run = 1;
     } else {
       Serial.print("\n Ziel (Schritte): ");
       Serial.println(s);
