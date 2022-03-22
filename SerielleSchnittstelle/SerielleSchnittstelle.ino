@@ -93,7 +93,7 @@ void Sechzehntelschritt() {
   digitalWrite(m3, HIGH);
 }
 
-bool go(int steps) { //Diese Methode lässt den Motor steps (Mikro)Schritte gehen, dss Vorzeichen entscheidet über die Richtung
+bool go(int steps) { //Diese Methode lässt den Motor steps (Mikro)Schritte gehen, das Vorzeichen entscheidet über die Richtung
   bool allowed = true;
   int i=0;
   k = steps/abs(steps); //Richtung, 1 oder -1
